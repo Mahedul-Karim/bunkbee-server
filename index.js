@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const { connectDB } = require("./config/db");
+const { handleError } = require("./controller/error");
 
 require("dotenv").config({ path: "./.env.local" });
 
@@ -22,6 +23,6 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-
+app.use(handleError);
 
 app.listen(PORT, () => console.log("Server is running!!"));
