@@ -18,6 +18,11 @@ const userSchema = new Schema({
     enum: ["bronze", "silver", "gold", "platinum"],
     default: "bronze",
   },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
 });
 
 exports.User = model("User", userSchema);

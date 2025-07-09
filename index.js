@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 
 const { connectDB } = require("./config/db");
 const { handleError } = require("./controller/error");
+const { userRoutes } = require("./routes/user");
 
 require("dotenv").config({ path: "./.env.local" });
 
@@ -22,6 +23,8 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
+
+app.use("/user", userRoutes);
 
 app.use(handleError);
 
