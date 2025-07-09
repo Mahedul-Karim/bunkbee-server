@@ -68,3 +68,37 @@ exports.logout = asyncWrapper(async (req, res, next) => {
     message: "Logged out successfully",
   });
 });
+
+exports.googleSignin = asyncWrapper(async (req, res, next) => {
+  const { email, fullName } = req.body;
+
+  const existingUser = await User.findOne({ email });
+
+  const token = getToken({ email });
+
+  const cookieOptions = {
+    httpOnly: true,
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    // secure:true,
+    // sameSite:'none'
+  };
+
+  if (existingUser) {
+    return res.cookie("token", token, cookieOptions).status(200).json({
+      success: true,
+      user: existingUser,
+      token,
+    });
+  }
+
+  const user = await User.create({
+    email,
+    fullName,
+  });
+
+  res.cookie("token", token, cookieOptions).status(201).json({
+    success: true,
+    user,
+    token,
+  });
+});

@@ -11,7 +11,6 @@ const userSchema = new Schema({
   },
   avatar: {
     type: String,
-    required: true,
   },
   badge: {
     type: String,
