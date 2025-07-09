@@ -46,9 +46,25 @@ exports.getMe = asyncWrapper(async (req, res, next) => {
     // sameSite:'none'
   };
 
-  res.cookie("token", token, cookieOptions).status(201).json({
+  res.cookie("token", token, cookieOptions).status(200).json({
     success: true,
     user,
     token,
+  });
+});
+
+exports.logout = asyncWrapper(async (req, res, next) => {
+  const cookieOptions = {
+    httpOnly: true,
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    // secure:true,
+    // sameSite:'none'
+  };
+
+  res.clearCookie("token", cookieOptions);
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
   });
 });
