@@ -12,6 +12,9 @@ const userSchema = new Schema({
   avatar: {
     type: String,
   },
+  avatar_id:{
+    type:String
+  },
   badge: {
     type: String,
     enum: ["bronze", "silver", "gold", "platinum"],

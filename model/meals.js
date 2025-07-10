@@ -26,4 +26,12 @@ const mealsSchema = new Schema({
   },
 });
 
+mealsSchema.index({
+  title: "text",
+  description: "text",
+  category: "text",
+  status: "text",
+  ingredients: "text",
+});
+
 exports.Meals = model("Meals", mealsSchema);

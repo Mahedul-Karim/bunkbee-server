@@ -1,12 +1,24 @@
+const { uploadToCloudinary } = require("../config/cloudinary");
 const { User } = require("../model/user");
 const { asyncWrapper } = require("../util/asyncWrapper");
 const AppError = require("../util/error");
 const { getToken } = require("../util/util");
 
 exports.createUser = asyncWrapper(async (req, res, next) => {
-  const { fullName, email, avatar } = req.body;
+  if (!req.file) {
+    return next(new AppError("Profile picture is required"), 400);
+  }
 
-  const user = await User.create({ fullName, email, avatar });
+  const { fullName, email } = req.body;
+
+  const result = await uploadToCloudinary(req.file);
+
+  const user = await User.create({
+    fullName,
+    email,
+    avatar: result.secure_url,
+    avatar_id: result.public_id,
+  });
 
   const token = getToken({ email });
 

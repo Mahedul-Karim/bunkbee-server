@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/db");
 const { handleError } = require("./controller/error");
 const { userRoutes } = require("./routes/user");
+const { mealsRoutes } = require("./routes/meals");
+const { configCloudinary } = require("./config/cloudinary");
 
 require("dotenv").config({ path: "./.env.local" });
 
@@ -13,6 +15,7 @@ const app = express();
 const PORT = 3000 || process.env.PORT;
 
 connectDB();
+configCloudinary();
 
 app.use(
   cors({
@@ -25,6 +28,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/user", userRoutes);
+app.use("/meals", mealsRoutes);
 
 app.use(handleError);
 
