@@ -4,6 +4,9 @@ const mealsSchema = new Schema({
   title: { type: String },
   category: { type: String },
   image: { type: String },
+  image_id:{
+    type:String
+  },
   ingredients: [{ type: String }],
   description: { type: String },
   price: { type: Number },
@@ -12,7 +15,7 @@ const mealsSchema = new Schema({
   likes: { type: Number, default: 0 },
   status: { type: String, enum: ["upcoming", "published"] },
   reviews_count: {
-    type: String,
+    type: Number,
     default: 0,
   },
   distributor_name: {
