@@ -38,3 +38,52 @@ exports.addMeal = asyncWrapper(async (req, res, next) => {
     meal,
   });
 });
+
+exports.getAllMeals = asyncWrapper(async (req, res, next) => {
+  const { search, category, price, page } = req.query;
+
+  const limit = 10;
+
+  const query = {};
+
+  if (search) {
+    query.$text = {
+      $search: search,
+    };
+  }
+
+  if (category && category !== "all") {
+    query.category = {
+      $regex: category,
+      $options: "i",
+    };
+  }
+
+  if (price) {
+    const splittedPrice = price?.split("-");
+
+    const minPrice = Number(splittedPrice?.at(0));
+    const maxPrice = Number(splittedPrice?.at(1));
+
+    query.price = {
+      $gte: minPrice,
+      $lte: maxPrice,
+    };
+  }
+
+  const meals = await Meals.find(query)
+    .skip((page - 1) * limit)
+    .limit(limit + 1);
+
+  const hasMore = meals?.length > limit;
+
+  if (hasMore) {
+    meals.pop();
+  }
+
+  return res.status(200).json({
+    success: true,
+    meals,
+    hasMore,
+  });
+});
