@@ -28,6 +28,9 @@ const reviewsSchema = new Schema({
   mealId: {
     type: String,
   },
+  reviewerId:{
+    type:String
+  }
 });
 
 exports.Reviews = model("Reviews", reviewsSchema);
