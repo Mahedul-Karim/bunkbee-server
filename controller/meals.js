@@ -1,4 +1,5 @@
 const { Meals } = require("../model/meals");
+const { Reviews } = require("../model/reviews");
 const { asyncWrapper } = require("../util/asyncWrapper");
 const { uploadToCloudinary } = require("../config/cloudinary");
 const AppError = require("../util/error");
@@ -44,7 +45,12 @@ exports.getAllMeals = asyncWrapper(async (req, res, next) => {
 
   const limit = 10;
 
-  const query = {};
+  const query = {
+    status: {
+      $regex: "published",
+      $options: "i",
+    },
+  };
 
   if (search) {
     query.$text = {
@@ -87,3 +93,43 @@ exports.getAllMeals = asyncWrapper(async (req, res, next) => {
     hasMore,
   });
 });
+
+exports.getSingleMeals = asyncWrapper(async (req, res, next) => {
+  const { mealId } = req.params;
+
+  const meal = await Meals.findById(mealId);
+  const reviews = await Reviews.find({ mealId });
+
+  res.status(200).json({
+    success: true,
+    meal,
+    reviews,
+  });
+});
+
+exports.likeMeals = asyncWrapper(async (req, res, next) => {
+  const { id } = req.body;
+
+  const meal = await Meals.findByIdAndUpdate(
+    id,
+    {
+      $inc: {
+        likes: 1,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (meal.likes === 10 && meal.status === "upcoming") {
+    meal.status = "published";
+    await meal.save();
+  }
+
+  return res.status(200).json({
+    success: true,
+  });
+});
+
+exports.requestMeals = asyncWrapper(async (req, res, next) => {});

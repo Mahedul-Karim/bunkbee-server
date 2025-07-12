@@ -4,8 +4,8 @@ const mealsSchema = new Schema({
   title: { type: String },
   category: { type: String },
   image: { type: String },
-  image_id:{
-    type:String
+  image_id: {
+    type: String,
   },
   ingredients: [{ type: String }],
   description: { type: String },

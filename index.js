@@ -7,6 +7,7 @@ const { handleError } = require("./controller/error");
 const { userRoutes } = require("./routes/user");
 const { mealsRoutes } = require("./routes/meals");
 const { configCloudinary } = require("./config/cloudinary");
+const { paymentRoutes } = require("./routes/payment");
 
 require("dotenv").config({ path: "./.env.local" });
 
@@ -29,6 +30,7 @@ app.use(express.json());
 
 app.use("/user", userRoutes);
 app.use("/meals", mealsRoutes);
+app.use("/payment", paymentRoutes);
 
 app.use(handleError);
 
