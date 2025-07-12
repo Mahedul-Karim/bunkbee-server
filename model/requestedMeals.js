@@ -16,6 +16,10 @@ const requestedMealsSchema = new Schema({
   requesterEmail: {
     type: String,
   },
+  likes: { type: Number },
+  reviews_count: {
+    type: Number,
+  },
   requesterId: {
     type: String,
   },

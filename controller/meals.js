@@ -167,3 +167,25 @@ exports.requestMeals = asyncWrapper(async (req, res, next) => {
     message: "Your meal request was posted successfully",
   });
 });
+
+exports.getUserRequestedMeals = asyncWrapper(async (req, res) => {
+  const user = req.user;
+
+  const meals = await Requestes.find({ requesterId: user._id });
+
+  res.status(200).json({
+    success: true,
+    meals,
+  });
+});
+
+exports.deleteRequestedMeal = asyncWrapper(async (req, res) => {
+  const { mealId } = req.body;
+
+  await Requestes.findByIdAndDelete(mealId);
+
+  res.status(200).json({
+    success: true,
+    message: "The requested meal has been deleted successfully",
+  });
+});

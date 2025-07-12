@@ -1,8 +1,11 @@
 const { uploadToCloudinary } = require("../config/cloudinary");
+const { Reviews } = require("../model/reviews");
 const { User } = require("../model/user");
+const { Meals } = require("../model/meals");
 const { asyncWrapper } = require("../util/asyncWrapper");
 const AppError = require("../util/error");
 const { getToken } = require("../util/util");
+const { Transactions } = require("../model/transactions");
 
 exports.createUser = asyncWrapper(async (req, res, next) => {
   if (!req.file) {
@@ -112,5 +115,60 @@ exports.googleSignin = asyncWrapper(async (req, res, next) => {
     success: true,
     user,
     token,
+  });
+});
+
+exports.getUserReviews = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  const reviews = await Reviews.find({ reviewerId: user._id });
+
+  res.status(200).json({
+    success: true,
+    reviews,
+  });
+});
+
+exports.updateReview = asyncWrapper(async (req, res, next) => {
+  const { review, rating, reviewId } = req.body;
+
+  await Reviews.findByIdAndUpdate(reviewId, {
+    rating,
+    review,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Review updated successfully",
+  });
+});
+
+exports.deleteReview = asyncWrapper(async (req, res) => {
+  const { reviewId } = req.body;
+
+  const review = await Reviews.findByIdAndDelete(reviewId);
+
+  await Meals.findByIdAndUpdate(review.mealId, {
+    $inc: {
+      reviews_count: -1,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Review deleted successfully",
+  });
+});
+
+exports.userTransactions = asyncWrapper(async (req, res) => {
+  const user = req.user;
+
+  const transactions = await Transactions.find({
+    userId: user._id,
+  });
+
+  res.status(200).json({
+    success: true,
+    transactions,
   });
 });
