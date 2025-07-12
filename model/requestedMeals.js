@@ -4,6 +4,9 @@ const requestedMealsSchema = new Schema({
   title: { type: String },
   category: { type: String },
   image: { type: String },
+  price: {
+    type: Number,
+  },
   requesterName: {
     type: String,
   },
@@ -11,6 +14,9 @@ const requestedMealsSchema = new Schema({
     type: String,
   },
   requesterEmail: {
+    type: String,
+  },
+  requesterId: {
     type: String,
   },
   status: {

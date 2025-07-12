@@ -3,6 +3,8 @@ const { Reviews } = require("../model/reviews");
 const { asyncWrapper } = require("../util/asyncWrapper");
 const { uploadToCloudinary } = require("../config/cloudinary");
 const AppError = require("../util/error");
+const { Requestes } = require("../model/requestedMeals");
+const { Transactions } = require("../model/transactions");
 
 exports.addMeal = asyncWrapper(async (req, res, next) => {
   if (!req.file) {
@@ -132,4 +134,36 @@ exports.likeMeals = asyncWrapper(async (req, res, next) => {
   });
 });
 
-exports.requestMeals = asyncWrapper(async (req, res, next) => {});
+exports.requestMeals = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  const { title, category, image, likes, reviews_count, price } = req.body;
+
+  const requestePromise = Requestes.create({
+    title,
+    category,
+    image,
+    requesterName: user.fullName,
+    requesterAvatar: user?.avatar,
+    requesterEmail: user?.email,
+    likes,
+    reviews_count,
+    price,
+    requesterId: user._id,
+  });
+
+  const transactionPromise = Transactions.create({
+    title,
+    type: "meal",
+    category,
+    price,
+    userId: user._id,
+  });
+
+  await Promise.all([requestePromise, transactionPromise]);
+
+  res.status(201).json({
+    success: true,
+    message: "Your meal request was posted successfully",
+  });
+});

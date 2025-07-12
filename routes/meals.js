@@ -5,6 +5,7 @@ const {
   getAllMeals,
   getSingleMeals,
   likeMeals,
+  requestMeals,
 } = require("../controller/meals");
 const { verifyUser } = require("../middleware/auth");
 const { upload } = require("../config/multer");
@@ -17,5 +18,6 @@ router
   .get(getAllMeals)
   .patch(verifyUser, likeMeals);
 router.route("/:mealId").get(getSingleMeals);
+router.route("/request").post(verifyUser, requestMeals);
 
 exports.mealsRoutes = router;
