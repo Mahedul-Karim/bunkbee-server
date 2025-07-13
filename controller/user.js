@@ -172,3 +172,78 @@ exports.userTransactions = asyncWrapper(async (req, res) => {
     transactions,
   });
 });
+
+exports.getAllUsers = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  if (user.role !== "admin") {
+    return next(
+      new AppError("You are not eligible to access this resources", 401)
+    );
+  }
+
+  const { search } = req.query;
+
+  const query = {
+    $and: [
+      {
+        _id: {
+          $ne: user._id,
+        },
+      },
+    ],
+  };
+
+  if (search) {
+    query.$and.push({
+      $or: [
+        {
+          fullName: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ],
+    });
+  }
+
+  const users = await User.find(query);
+
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+exports.updateUserToRole = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  const { userId } = req.body;
+
+  if (user.role !== "admin") {
+    return next(
+      new AppError("You are not eligible to access this resources", 401)
+    );
+  }
+
+  const existingUser = await User.findById(userId);
+
+  if (existingUser.role === "user") {
+    existingUser.role = "admin";
+  } else {
+    existingUser.role = "user";
+  }
+
+  await existingUser.save();
+
+  res.status(200).json({
+    success: true,
+    message: "User role updated successfully",
+  });
+});

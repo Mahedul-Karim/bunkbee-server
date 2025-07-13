@@ -9,6 +9,8 @@ const {
   updateReview,
   deleteReview,
   userTransactions,
+  getAllUsers,
+  updateUserToRole,
 } = require("../controller/user");
 const { upload } = require("../config/multer");
 const { verifyUser } = require("../middleware/auth");
@@ -26,5 +28,10 @@ router
   .delete(verifyUser, deleteReview);
 
 router.route("/transactions").get(verifyUser, userTransactions);
+
+router
+  .route("/admin")
+  .get(verifyUser, getAllUsers)
+  .patch(verifyUser, updateUserToRole);
 
 exports.userRoutes = router;

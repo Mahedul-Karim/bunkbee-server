@@ -5,6 +5,7 @@ const { uploadToCloudinary } = require("../config/cloudinary");
 const AppError = require("../util/error");
 const { Requestes } = require("../model/requestedMeals");
 const { Transactions } = require("../model/transactions");
+const { User } = require("../model/user");
 
 exports.addMeal = asyncWrapper(async (req, res, next) => {
   if (!req.file) {
@@ -33,6 +34,12 @@ exports.addMeal = asyncWrapper(async (req, res, next) => {
     distributor_name: user.fullName,
     distributor_email: user.email,
     distributor_avatar: user.avatar,
+  });
+
+  await User.findByIdAndUpdate(user._id, {
+    $inc: {
+      mealsAdded: 1,
+    },
   });
 
   res.status(201).json({

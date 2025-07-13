@@ -12,8 +12,8 @@ const userSchema = new Schema({
   avatar: {
     type: String,
   },
-  avatar_id:{
-    type:String
+  avatar_id: {
+    type: String,
   },
   badge: {
     type: String,
@@ -24,6 +24,10 @@ const userSchema = new Schema({
     type: String,
     enum: ["user", "admin"],
     default: "user",
+  },
+  mealsAdded: {
+    type: Number,
+    default: 0,
   },
 });
 
