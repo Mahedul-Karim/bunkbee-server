@@ -19,8 +19,6 @@ const PORT = 3000 || process.env.PORT;
 connectDB();
 configCloudinary();
 
-
-
 app.use(
   cors({
     credentials: true,

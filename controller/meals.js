@@ -257,6 +257,10 @@ exports.deleteMeal = asyncWrapper(async (req, res, next) => {
 
   const meal = await Meals.findByIdAndDelete(mealId);
 
+  if (!meal) {
+    return next(new AppError("No meal found", 404));
+  }
+
   if (meal.reviews_count > 0) {
     await Reviews.deleteMany({ mealId });
   }

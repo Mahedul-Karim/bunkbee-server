@@ -35,10 +35,10 @@ exports.createReview = asyncWrapper(async (req, res, next) => {
     },
   ]);
 
-  const avg = averageRating?.[0]?.avgRating || 0;
+  const avg = averageRating?.[0]?.avgRating;
 
   const meal = await Meals.findByIdAndUpdate(mealId, {
-    rating: avg,
+    rating: avg ? Number(avg?.toFixed(1)) : 0,
     $inc: {
       reviews_count: 1,
     },
@@ -47,5 +47,25 @@ exports.createReview = asyncWrapper(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Your review has been posted successfully",
+  });
+});
+
+exports.getAllReviews = asyncWrapper(async (req, res) => {
+  const reviews = await Reviews.find();
+
+  res.status(200).json({
+    success: true,
+    reviews,
+  });
+});
+
+exports.deleteReview = asyncWrapper(async (req, res) => {
+  const { reviewId } = req.body;
+
+  await Reviews.findByIdAndDelete(reviewId);
+
+  res.status(200).json({
+    success: true,
+    message: "Review deleted successfully",
   });
 });
