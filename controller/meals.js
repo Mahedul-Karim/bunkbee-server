@@ -1,7 +1,10 @@
 const { Meals } = require("../model/meals");
 const { Reviews } = require("../model/reviews");
 const { asyncWrapper } = require("../util/asyncWrapper");
-const { uploadToCloudinary } = require("../config/cloudinary");
+const {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} = require("../config/cloudinary");
 const AppError = require("../util/error");
 const { Requestes } = require("../model/requestedMeals");
 const { Transactions } = require("../model/transactions");
@@ -194,5 +197,72 @@ exports.deleteRequestedMeal = asyncWrapper(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "The requested meal has been deleted successfully",
+  });
+});
+
+exports.adminAllMeals = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  const { sortBy } = req.query;
+
+  const sortObject = {};
+
+  if (sortBy === "likes") {
+    sortObject.likes = -1;
+  } else if (sortBy === "reviews_count") {
+    sortObject.reviews_count = -1;
+  } else {
+    sortObject.postTime = -1;
+  }
+
+  const meals = await Meals.find({
+    distributor_email: {
+      $regex: user.email,
+      $options: "i",
+    },
+  }).sort(sortObject);
+
+  res.status(200).json({
+    success: true,
+    meals,
+  });
+});
+
+exports.updateMeals = asyncWrapper(async (req, res, next) => {
+  const { mealId } = req.params;
+
+  const data = { ...req.body };
+
+  if (req.file) {
+    if (data.image_id) {
+      await deleteFromCloudinary(data.image_id);
+    }
+
+    const result = await uploadToCloudinary(req.file);
+
+    data.image = result.secure_url;
+    data.image_id = result.public_id;
+  }
+
+  await Meals.findByIdAndUpdate(mealId, data);
+
+  res.status(200).json({
+    success: true,
+    message: "Meal updated successfully",
+  });
+});
+
+exports.deleteMeal = asyncWrapper(async (req, res, next) => {
+  const { mealId } = req.params;
+
+  const meal = await Meals.findByIdAndDelete(mealId);
+
+  if (meal.reviews_count > 0) {
+    await Reviews.deleteMany({ mealId });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Meal delete successfully",
   });
 });

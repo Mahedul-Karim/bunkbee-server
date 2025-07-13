@@ -14,7 +14,7 @@ exports.uploadToCloudinary = async (file) => {
   )}`;
 
   return await cloudinary.v2.uploader.upload(fileBuffer, {
-    folder: "copy-forge",
+    folder: "bunkbee",
   });
 };
 
