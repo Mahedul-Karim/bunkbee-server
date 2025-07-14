@@ -8,7 +8,7 @@ const { getToken } = require("../util/util");
 const { Transactions } = require("../model/transactions");
 
 exports.createUser = asyncWrapper(async (req, res, next) => {
-  if (req.file) {
+  if (!req.file) {
     return next(new AppError("Profile picture is required"), 400);
   }
 
