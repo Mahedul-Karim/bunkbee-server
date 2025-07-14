@@ -9,6 +9,7 @@ const AppError = require("../util/error");
 const { Requestes } = require("../model/requestedMeals");
 const { Transactions } = require("../model/transactions");
 const { User } = require("../model/user");
+const { UpcomingMeals } = require("../model/upcomingMeals");
 
 exports.addMeal = asyncWrapper(async (req, res, next) => {
   if (!req.file) {
@@ -21,7 +22,7 @@ exports.addMeal = asyncWrapper(async (req, res, next) => {
     return next(new AppError("Only admins can add meal", 401));
   }
 
-  const { title, category, ingredients, description, price, status } = req.body;
+  const { title, category, ingredients, description, price } = req.body;
 
   const result = await uploadToCloudinary(req.file);
 
@@ -33,7 +34,6 @@ exports.addMeal = asyncWrapper(async (req, res, next) => {
     ingredients,
     description,
     price,
-    status,
     distributor_name: user.fullName,
     distributor_email: user.email,
     distributor_avatar: user.avatar,
@@ -57,12 +57,7 @@ exports.getAllMeals = asyncWrapper(async (req, res, next) => {
 
   const limit = 10;
 
-  const query = {
-    status: {
-      $regex: "published",
-      $options: "i",
-    },
-  };
+  const query = {};
 
   if (search) {
     query.$text = {
@@ -91,7 +86,8 @@ exports.getAllMeals = asyncWrapper(async (req, res, next) => {
 
   const meals = await Meals.find(query)
     .skip((page - 1) * limit)
-    .limit(limit + 1);
+    .limit(limit + 1)
+    .sort({ postTime: -1 });
 
   const hasMore = meals?.length > limit;
 
@@ -133,11 +129,6 @@ exports.likeMeals = asyncWrapper(async (req, res, next) => {
       new: true,
     }
   );
-
-  if (meal.likes === 10 && meal.status === "upcoming") {
-    meal.status = "published";
-    await meal.save();
-  }
 
   return res.status(200).json({
     success: true,
@@ -257,6 +248,10 @@ exports.deleteMeal = asyncWrapper(async (req, res, next) => {
 
   const meal = await Meals.findByIdAndDelete(mealId);
 
+  if (meal.image_id) {
+    await deleteFromCloudinary(meal.image_id);
+  }
+
   if (!meal) {
     return next(new AppError("No meal found", 404));
   }
@@ -311,5 +306,116 @@ exports.updateRequestedMeals = asyncWrapper(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Meal has been served",
+  });
+});
+
+exports.addUpcomingMeal = asyncWrapper(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("Meal image is required"));
+  }
+
+  const user = req.user;
+
+  if (user.role !== "admin") {
+    return next(new AppError("Only admins can add meal", 401));
+  }
+
+  const { title, category, ingredients, description, price } = req.body;
+
+  const result = await uploadToCloudinary(req.file);
+
+  const meal = await UpcomingMeals.create({
+    title,
+    category,
+    image: result.secure_url,
+    image_id: result.public_id,
+    ingredients,
+    description,
+    price,
+    distributor_name: user.fullName,
+    distributor_email: user.email,
+    distributor_avatar: user.avatar,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Upcoming Meals created successfully",
+  });
+});
+
+exports.getUpcomingMeals = asyncWrapper(async (req, res) => {
+  const meals = await UpcomingMeals.find().sort({
+    likes: -1,
+  });
+
+  res.status(200).json({
+    success: true,
+    meals,
+  });
+});
+
+exports.updateUpcomingMeals = asyncWrapper(async (req, res, next) => {
+  const { mealId } = req.body;
+
+  const meal = await UpcomingMeals.findById(mealId);
+
+  if (!meal) {
+    return next(new AppError("No upcoming meals found!", 404));
+  }
+
+  await Meals.create(meal.toObject());
+
+  await UpcomingMeals.findByIdAndDelete(mealId);
+
+  res.status(200).json({
+    success: true,
+    message: "Meal published successfully",
+  });
+});
+
+exports.manageUpcomingMealsLikes = asyncWrapper(async (req, res, next) => {
+  const user = req.user;
+
+  const { mealId } = req.body;
+
+  const upcomingMeal = await UpcomingMeals.findById(mealId);
+
+  if (!upcomingMeal) {
+    return next(new AppError("No meal found!", 404));
+  }
+
+  const userAlreadyLiked = upcomingMeal.likedBy.includes(user._id);
+
+  if (userAlreadyLiked) {
+    upcomingMeal.likes = upcomingMeal.likes - 1;
+    upcomingMeal.likedBy = upcomingMeal.likedBy.filter(
+      (id) => id?.toString() !== user._id?.toString()
+    );
+
+    await upcomingMeal.save();
+
+    return res.status(200).json({
+      success: true,
+    });
+  }
+
+  upcomingMeal.likes = upcomingMeal.likes + 1;
+  upcomingMeal.likedBy.push(user._id);
+  await upcomingMeal.save();
+
+  if (upcomingMeal.likes === 10) {
+    const mealObject = upcomingMeal.toObject();
+
+    await Meals.create(mealObject);
+    await UpcomingMeals.findByIdAndDelete(mealId);
+
+    return res.status(200).json({
+      success: true,
+      message: "This meal has been published",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
   });
 });

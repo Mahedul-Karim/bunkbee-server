@@ -13,6 +13,10 @@ const {
   deleteMeal,
   allRequestedMeals,
   updateRequestedMeals,
+  getUpcomingMeals,
+  updateUpcomingMeals,
+  addUpcomingMeal,
+  manageUpcomingMealsLikes,
 } = require("../controller/meals");
 const { verifyUser } = require("../middleware/auth");
 const { upload } = require("../config/multer");
@@ -24,6 +28,12 @@ router
   .post(verifyUser, upload.single("image"), addMeal)
   .get(getAllMeals)
   .patch(verifyUser, likeMeals);
+
+router
+  .route("/upcoming/meal")
+  .post(verifyUser, upload.single("image"), addUpcomingMeal)
+  .patch(verifyUser, manageUpcomingMealsLikes);
+
 router
   .route("/:mealId")
   .get(getSingleMeals)
@@ -39,6 +49,11 @@ router
   .route("/request/user")
   .get(verifyUser, getUserRequestedMeals)
   .delete(verifyUser, deleteRequestedMeal);
+
+router
+  .route("/upcoming/admin")
+  .get(getUpcomingMeals)
+  .patch(verifyUser, updateUpcomingMeals);
 
 router.route("/admin/all").get(verifyUser, adminAllMeals);
 

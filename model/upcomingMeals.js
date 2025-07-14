@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const mealsSchema = new Schema({
+const upcomingMealsSchema = new Schema({
   title: { type: String },
   category: { type: String },
   image: { type: String },
@@ -26,14 +26,11 @@ const mealsSchema = new Schema({
   distributor_avatar: {
     type: String,
   },
+  likedBy: [
+    {
+      type: String,
+    },
+  ],
 });
 
-mealsSchema.index({
-  title: "text",
-  description: "text",
-  category: "text",
-  status: "text",
-  ingredients: "text",
-});
-
-exports.Meals = model("Meals", mealsSchema);
+exports.UpcomingMeals = model("UpcomingMeals", upcomingMealsSchema);
