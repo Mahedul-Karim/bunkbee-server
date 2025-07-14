@@ -11,6 +11,8 @@ const {
   adminAllMeals,
   updateMeals,
   deleteMeal,
+  allRequestedMeals,
+  updateRequestedMeals,
 } = require("../controller/meals");
 const { verifyUser } = require("../middleware/auth");
 const { upload } = require("../config/multer");
@@ -27,7 +29,11 @@ router
   .get(getSingleMeals)
   .patch(verifyUser, upload.single("image"), updateMeals)
   .delete(verifyUser, deleteMeal);
-router.route("/request").post(verifyUser, requestMeals);
+router
+  .route("/request/meals")
+  .post(verifyUser, requestMeals)
+  .get(verifyUser, allRequestedMeals)
+  .patch(verifyUser, updateRequestedMeals);
 
 router
   .route("/request/user")

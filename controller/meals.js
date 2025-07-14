@@ -270,3 +270,46 @@ exports.deleteMeal = asyncWrapper(async (req, res, next) => {
     message: "Meal delete successfully",
   });
 });
+
+exports.allRequestedMeals = asyncWrapper(async (req, res, next) => {
+  const { search } = req.query;
+
+  const query = {};
+
+  if (search) {
+    query.$or = [
+      {
+        requesterName: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        requesterEmail: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const requestedMeals = await Requestes.find(query);
+
+  res.status(200).json({
+    success: true,
+    requestedMeals,
+  });
+});
+
+exports.updateRequestedMeals = asyncWrapper(async (req, res, next) => {
+  const { mealId } = req.body;
+
+  await Requestes.findByIdAndUpdate(mealId, {
+    status: "delivered",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Meal has been served",
+  });
+});
