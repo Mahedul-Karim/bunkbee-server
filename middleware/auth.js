@@ -4,8 +4,9 @@ const jwt = require("jsonwebtoken");
 const { User } = require("../model/user");
 
 exports.verifyUser = asyncWrapper(async (req, res, next) => {
-  const token =
-    req.cookies?.token || req.header("Authorization")?.split(" ")[1];
+  const token = req.cookies?.token
+    ? req.cookies?.token
+    : req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
     return next(

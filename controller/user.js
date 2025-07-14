@@ -8,7 +8,7 @@ const { getToken } = require("../util/util");
 const { Transactions } = require("../model/transactions");
 
 exports.createUser = asyncWrapper(async (req, res, next) => {
-  if (!req.file) {
+  if (req.file) {
     return next(new AppError("Profile picture is required"), 400);
   }
 
@@ -89,8 +89,6 @@ exports.googleSignin = asyncWrapper(async (req, res, next) => {
 
   const existingUser = await User.findOne({ email });
 
-  const token = getToken({ email });
-
   const cookieOptions = {
     httpOnly: true,
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -99,6 +97,8 @@ exports.googleSignin = asyncWrapper(async (req, res, next) => {
   };
 
   if (existingUser) {
+    const token = getToken({ email });
+
     return res.cookie("token", token, cookieOptions).status(200).json({
       success: true,
       user: existingUser,
@@ -110,6 +110,8 @@ exports.googleSignin = asyncWrapper(async (req, res, next) => {
     email,
     fullName,
   });
+
+  const token = getToken({ email });
 
   res.cookie("token", token, cookieOptions).status(201).json({
     success: true,
